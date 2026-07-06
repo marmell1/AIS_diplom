@@ -65,7 +65,9 @@ class WarehousesLoading(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     warehouse_id: Mapped[int]
+    warehouse_name: Mapped[str] = mapped_column(String(100))
     product_id: Mapped[int]
+    product_name: Mapped[str] = mapped_column(String(100))
     batch_id: Mapped[int]
     quantity: Mapped[int]
     capacity: Mapped[int] #занимает места
