@@ -4,28 +4,28 @@ from database import get_session
 def main():
     with get_session() as session:
         print("Добавление товаров в каталог")
-        product1 = Products(SKU = "000001", name="Вода негазированная 1,5 литра", producer = "БонАква",
+        product1 = Products(SKU = "а000001", name="Вода негазированная 1,5 литра", producer = "БонАква",
                             measure = "шт",price = 80,temp = 22,
                             capacity = 2);
-        product2 = Products(SKU = "000002", name="Вода газированная 0,5 литра", producer = "БонАква",
+        product2 = Products(SKU = "а000002", name="Вода газированная 0,5 литра", producer = "БонАква",
                             measure = "шт",price = 50,temp = 22,
                             capacity = 1);
-        product3 = Products(SKU = "000003", name="Молоко 1 литр", producer = "Княгинино",
+        product3 = Products(SKU = "а000003", name="Молоко 1 литр", producer = "Княгинино",
                             measure = "шт",price = 85,temp = 10,
                             capacity = 2);
-        product4 = Products(SKU = "000004", name="Пельмени замороженные", producer = "Мираторг",
+        product4 = Products(SKU = "а000004", name="Пельмени замороженные", producer = "Мираторг",
                             measure = "шт",price = 300,temp = -10,
                             capacity = 2);
-        product5 = Products(SKU = "000005", name="Креветки замороженные", producer = "Русское море",
+        product5 = Products(SKU = "а000005", name="Креветки замороженные", producer = "Русское море",
                             measure = "кг",price = 1500,temp = -15,
                             capacity = 2);
-        product6 = Products(SKU = "000006", name="Индейка охлажденная", producer = "Индилайт",
+        product6 = Products(SKU = "а000006", name="Индейка охлажденная", producer = "Индилайт",
                             measure = "кг",price = 800,temp = 5,
                             capacity = 2);
-        product7 = Products(SKU = "000007", name="Вода негазированная 5 литров", producer = "Аква",
+        product7 = Products(SKU = "а000007", name="Вода негазированная 5 литров", producer = "Аква",
                             measure = "шт",price = 200,temp = 22,
                             capacity = 5);
-        product8 = Products(SKU = "000008", name="Вода негазированная 20 литров", producer = "Аква",
+        product8 = Products(SKU = "а000008", name="Вода негазированная 20 литров", producer = "Аква",
                             measure = "шт",price = 450,temp = 22,
                             capacity = 15);
 

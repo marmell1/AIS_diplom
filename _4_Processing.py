@@ -51,25 +51,25 @@ def add_stock_movement(session, wh_in, wh_out, product_id,count,date):
     session.commit()
     print("добавили строку в реестр операций")
 
-def get_input(input_type:str,wh:int|str,pr:int,q:int,source:int|str) -> dict:
+def get_input(input_type:str,wh:int|str,pr:int|str,q:int,source:int|str) -> dict:
         if input_type == "CLI":
             dict_input = get_input_cli(wh,pr,q,source)
             return dict_input
 
 
         if input_type == "Report":
-            get_input_Report()
-
-        dict_input = {}
-        return dict_input
+            dict_input=get_input_Report(wh,pr,q,source)
+            return dict_input
 
 def get_input_cli(wh:int|str, pr:int, q:int, source:int|str):
     dict_input = {"wh_in":wh,"wh_out":source,"product_id":pr,"count":int(q)}
     print("get_input_CLI")
     return dict_input
 
-def get_input_Report():
-        print("get_input_Report")
+def get_input_Report(wh:int|str, pr:int, q:int, source:int|str):
+    dict_input = {"wh_in":wh,"wh_out":source,"product_id":pr,"count":int(q)}
+    print("get_input_Report")
+    return dict_input
 
 
 
