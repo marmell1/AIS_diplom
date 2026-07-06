@@ -7,8 +7,7 @@ def main():
     create_tables()
     filling_data()
     prepare()
-    processing()
-
+    # processing()
 
 if __name__ == "__main__":
     main()

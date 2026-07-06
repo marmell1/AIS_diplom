@@ -29,7 +29,7 @@ def handler(di): # берем входящий dict
 
 
 
-def change_wh(session, wh, product_id, count):
+def change_wh(session, wh:int|str, product_id:int, count:int):
     print ("изменяем количество товара на складе")
     stmt = select(WarehousesLoading).where(WarehousesLoading.warehouse_id == wh, WarehousesLoading.product_id == product_id)
     whl1 = session.scalars(stmt).one_or_none()
@@ -51,9 +51,11 @@ def add_stock_movement(session, wh_in, wh_out, product_id,count,date):
     session.commit()
     print("добавили строку в реестр операций")
 
-def get_input(input_type) -> dict:
+def get_input(input_type:str,wh:int|str,pr:int,q:int,source:int|str) -> dict:
         if input_type == "CLI":
-            get_input_CLI()
+            dict_input = get_input_cli(wh,pr,q,source)
+            return dict_input
+
 
         if input_type == "Report":
             get_input_Report()
@@ -61,8 +63,10 @@ def get_input(input_type) -> dict:
         dict_input = {}
         return dict_input
 
-def get_input_CLI():
-        print("get_input_CLI")
+def get_input_cli(wh:int|str, pr:int, q:int, source:int|str):
+    dict_input = {"wh_in":wh,"wh_out":source,"product_id":pr,"count":int(q)}
+    print("get_input_CLI")
+    return dict_input
 
 def get_input_Report():
         print("get_input_Report")
