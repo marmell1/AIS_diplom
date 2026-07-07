@@ -28,15 +28,7 @@ Base = declarative_base()
 
 @contextmanager
 def get_session()-> Generator[Session, Any, None]:
-    """Контекстный менеджер для сессии БД.
 
-    Используйте как:
-        with get_session() as session:
-            ...
-
-    Менеджер гарантирует закрытие сессии и делает rollback при исключении.
-    Коммиты должны выполняться вручную (session.commit()), если это требуется.
-    """
     session = SessionLocal()
     try:
         yield session
@@ -48,7 +40,6 @@ def get_session()-> Generator[Session, Any, None]:
 
 
 def init_db() -> None:
-    # metadata.create_all проверяет существование таблиц и создает отсутствующие
     Base.metadata.create_all(bind=engine)
 
 

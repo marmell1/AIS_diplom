@@ -1,9 +1,11 @@
-from _4_Processing import get_input as get_input
+# from _4_Processing import get_input as get_input
 from _4_Processing import handler as handler
 from database import get_session
 from models import Products
 from sqlalchemy import select
 import math
+import getpass
+
 
 import openpyxl
 
@@ -19,7 +21,18 @@ def move (wh: int = typer.Option(..., help="Склад, на который пе
     Добавление товара на склад - ввести номер склада, id продукта, количество, склад-источник
     """
     #создать если нет такого продукта
-    dict_serv = get_input("CLI", wh,pr,q,source)
+
+    username = getpass.getuser()
+
+    dict_serv = {"input_type": "CLI",
+                 "resp": username,
+                 "wh_in": wh,
+                 "wh_out": source,
+                 "product_id": pr,
+                 "count": q
+                 }
+
+    # dict_serv = get_input("CLI", username, wh,pr,q,source)
     handler(dict_serv)
 
     print(f"Внесли склад номер {wh}, товар {pr}, {q} ед., источник - {source}")
@@ -68,7 +81,7 @@ def read(filename, wh_id):
             if sheet.cell(row=dic_bill_check_vendor_row[dic_vendors[key]], column=dic_bill_check_vendor_column[dic_vendors[key]]).value == key:
                 act_number = sheet.cell(row=dic_bill_number_row[dic_vendors[key]], column=dic_bill_number_column[dic_vendors[key]]).value
                 act_date = sheet.cell(row=dic_bill_number_date_row[dic_vendors[key]], column=dic_bill_number_date_column[dic_vendors[key]]).value
-                input_type_name_date = "Накладная " + act_number + " от " + act_date
+                input_type_name_date = "Накладная " + str(act_number) + " от " + str(act_date) + ", " + key
                 print(act_number, act_date)
 
                 rows = list(sheet.iter_rows(values_only=True))
@@ -97,7 +110,18 @@ def read(filename, wh_id):
                             session1.commit()
                             stmt = select(Products.id).where(Products.SKU == row[dic_bill_sku_column[dic_vendors[key]]])
                             pr_id = session1.scalar(stmt)
-                        dict_serv = get_input("Report", wh_id, pr_id, int(row[dic_bill_products_quantity_column[dic_vendors[key]]]), "ИП Ромашка")
+                        # dict_serv = get_input("Report", input_type_name_date,wh_id, pr_id,
+                        #                       int(row[dic_bill_products_quantity_column[dic_vendors[key]]]), "ИП Ромашка")
+
+                        dict_serv = {"input_type":"Report",
+                                     "resp":input_type_name_date,
+                                     "wh_in":wh_id,
+                                     "wh_out":key,
+                                     "product_id":pr_id,
+                                     "count":int(row[dic_bill_products_quantity_column[dic_vendors[key]]]),
+                                     "date":act_date
+                                     }
+
                         handler(dict_serv)
                     else:
                         break
@@ -156,17 +180,6 @@ def read(filename, wh_id):
         #             handler(dict_serv)
         #         else:
         #             break
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -54,7 +54,7 @@ def main():
         session.add_all([product1,product2,product3,product4,product5,product6,product7,product8])
         session.add_all([wh1,wh2,wh3,wh4,wh5,wh6,wh7])
         session.add_all([whl1,whl2,whl3,whl4,whl5,whl6,whl7,whl8,whl9,whl10])
-        # TODO: Проверьте, появились пользователи в БД?
+
         session.commit()
 
 if __name__ == "__main__":
