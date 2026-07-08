@@ -51,7 +51,7 @@ def change_wh(session, wh:int|str, product_id:int, count:int):
     whl1 = session.scalars(stmt).one_or_none()
 
     if not whl1:
-        whl_ = WarehousesLoading(warehouse_id=wh, warehouse_name="", product_id=product_id, product_name="", batch_id=2, quantity=0,
+        whl_ = WarehousesLoading(warehouse_id=wh, warehouse_name="", product_id=product_id, product_name="",  quantity=0,
                              capacity=0)
         session.add(whl_)
         session.commit()

@@ -1,10 +1,9 @@
-# from _4_Processing import get_input as get_input
-from dataclasses import replace
 from datetime import datetime
+today = datetime.now()
 
 from _4_Processing import handler as handler
 from database import get_session
-from models import Products,WarehousesLoading
+from models import Products,WarehousesLoading,StockMovement,Warehouses
 from sqlalchemy import select
 import math
 import pandas as pd
@@ -18,6 +17,7 @@ from openpyxl.chart import BarChart, Reference
 
 import typer
 app = typer.Typer()
+
 
 @app.command()
 def move (wh: int = typer.Option(..., help="Склад, на который перемещаем либо покупатель"),
@@ -55,25 +55,39 @@ def check_temp(rr):
         temp = "нет данных"
     return temp
 
+def print_gap(text):
+    print()
+    print()
+    print(text)
+    print()
+    print()
+
 @app.command()
-def read(filename, wh_id):
-    #инструкцию прописать
-
-
+def read(filename: str = typer.Option(..., help="Название файла с документацией"),
+         wh_id: int = typer.Option(..., help="Склад, на который перемещаем")):
     """
     Загрузка данных из накладной поставщика. Для примера всего два поставщика - ИП Ромашка и ООО Подворье
     """
+
+
     workbook = openpyxl.load_workbook(filename, data_only=True)  # data_only=True считывает значения, а не формулы
     sheet = workbook.active
-    # проверить что такого номера накладной нет в реестре
-    # проверить что файл по правильной форме
-    # что поставщик в списке
+
     # что суммы и цены неотрицательные
-    # что дата еще не случилась
+
     # что все штуки ниже где надо integer
 
 
+
     with get_session() as session1:
+
+        stmt = select(Warehouses).where(Warehouses.id == wh_id)
+        wh1 = session1.scalars(stmt).all()
+        print_gap(wh1)
+
+        if not wh1:
+            print_gap("Внесите корректный номер склада")
+            return 0
 
         dic_vendors = {"ИП Ромашка":1,"ООО Подворье":2}
         dic_bill_check_vendor_row={1:14,2:1}
@@ -94,109 +108,81 @@ def read(filename, wh_id):
         dic_bill_capacity_column1={1:38,2:7}
         dic_bill_capacity_column2={2:5}
 
+        serv_b_key = 0
         for key in dic_vendors.keys():
             if sheet.cell(row=dic_bill_check_vendor_row[dic_vendors[key]], column=dic_bill_check_vendor_column[dic_vendors[key]]).value == key:
+                serv_b_key = 1
                 act_number = sheet.cell(row=dic_bill_number_row[dic_vendors[key]], column=dic_bill_number_column[dic_vendors[key]]).value
                 act_date = sheet.cell(row=dic_bill_number_date_row[dic_vendors[key]], column=dic_bill_number_date_column[dic_vendors[key]]).value
                 input_type_name_date = "Накладная " + str(act_number) + " от " + str(act_date) + ", " + key
-                print(act_number, act_date)
+                print_gap(input_type_name_date)
 
-                rows = list(sheet.iter_rows(values_only=True))
-                for row in rows[dic_bill_first_row[dic_vendors[key]]:]:
-                    if row[0] is not None:
-                        stmt = select(Products.id).where(Products.SKU == row[dic_bill_sku_column[dic_vendors[key]]])
-                        pr_id = session1.scalar(stmt)
-                        if pr_id is None:
-                            temp = check_temp(row[dic_bill_temp_column[dic_vendors[key]]])
-                            if dic_vendors[key] ==1:
-                                price = row[dic_bill_price_column1[dic_vendors[key]]]
-                                capacity = int(math.ceil(12 / row[dic_bill_capacity_column1[dic_vendors[key]]]))
+                stmt = select(StockMovement).where(StockMovement.input_type_resp == input_type_name_date)
+                whl1 = session1.scalars(stmt).all()
+                print_gap(whl1)
 
-                            if dic_vendors[key] ==2:
-                                price = int(round(row[dic_bill_price_column1[dic_vendors[key]]]/row[dic_bill_price_column2[dic_vendors[key]]]))
-                                capacity = int(math.ceil(row[dic_bill_capacity_column1[dic_vendors[key]]] / row[dic_bill_capacity_column2[dic_vendors[key]]]))
+                if not whl1:
+                    print('Накладной с таким номером в реестре нет, внесение информации')
 
-                            product1 = Products(SKU=row[dic_bill_sku_column[dic_vendors[key]]],
-                                                name=row[dic_bill_name_column[dic_vendors[key]]],
-                                                producer=row[dic_bill_producer_column[dic_vendors[key]]],
-                                                measure=row[dic_bill_measure_column[dic_vendors[key]]],
-                                                price=price,
-                                                temp=temp,
-                                                capacity=capacity)
-                            session1.add(product1)
-                            session1.commit()
+                    rows = list(sheet.iter_rows(values_only=True))
+                    for row in rows[dic_bill_first_row[dic_vendors[key]]:]:
+                        if row[0] is not None:
                             stmt = select(Products.id).where(Products.SKU == row[dic_bill_sku_column[dic_vendors[key]]])
                             pr_id = session1.scalar(stmt)
-                        # dict_serv = get_input("Report", input_type_name_date,wh_id, pr_id,
-                        #                       int(row[dic_bill_products_quantity_column[dic_vendors[key]]]), "ИП Ромашка")
 
-                        dict_serv = {"input_type":"Report",
-                                     "resp":input_type_name_date,
-                                     "wh_in":wh_id,
-                                     "wh_out":key,
-                                     "product_id":pr_id,
-                                     "count":int(row[dic_bill_products_quantity_column[dic_vendors[key]]]),
-                                     "date":act_date
-                                     }
+                            count = int(row[dic_bill_products_quantity_column[dic_vendors[key]]])
+                            if count <= 0:
+                                print_gap("Количество не может быть отрицательным")
+                                return 0
 
-                        handler(dict_serv)
-                    else:
-                        break
+                            if pr_id is None:
+                                temp = check_temp(row[dic_bill_temp_column[dic_vendors[key]]])
+                                if dic_vendors[key] ==1:
+                                    price = row[dic_bill_price_column1[dic_vendors[key]]]
+                                    capacity = int(math.ceil(12 / row[dic_bill_capacity_column1[dic_vendors[key]]]))
+
+                                if dic_vendors[key] ==2:
+                                    price = int(round(row[dic_bill_price_column1[dic_vendors[key]]]/row[dic_bill_price_column2[dic_vendors[key]]]))
+                                    capacity = int(math.ceil(row[dic_bill_capacity_column1[dic_vendors[key]]] / row[dic_bill_capacity_column2[dic_vendors[key]]]))
+
+                                if price<=0:
+                                    print_gap("Цена не может быть отрицательной")
+                                    return 0
+
+
+
+                                product1 = Products(SKU=row[dic_bill_sku_column[dic_vendors[key]]],
+                                                    name=row[dic_bill_name_column[dic_vendors[key]]],
+                                                    producer=row[dic_bill_producer_column[dic_vendors[key]]],
+                                                    measure=row[dic_bill_measure_column[dic_vendors[key]]],
+                                                    price=price,
+                                                    temp=temp,
+                                                    capacity=capacity)
+                                session1.add(product1)
+                                session1.commit()
+                                stmt = select(Products.id).where(Products.SKU == row[dic_bill_sku_column[dic_vendors[key]]])
+                                pr_id = session1.scalar(stmt)
+
+                            dict_serv = {"input_type":"Report",
+                                         "resp":input_type_name_date,
+                                         "wh_in":wh_id,
+                                         "wh_out":key,
+                                         "product_id":pr_id,
+                                         "count":count,
+                                         "date":act_date
+                                         }
+
+                            handler(dict_serv)
+                        else:
+                            break
+                else:
+                    print_gap("Данная накладная уже загружена")
 
 
 
 
-        #
-        # if sheet.cell(row=14, column=9).value == "ИП Ромашка":
-        #
-        #     act_number = sheet.cell(row=26, column=50).value
-        #     act_date = sheet.cell(row=26, column=61).value
-        #     input_type_name_date = "Накладная " + act_number + " от " + act_date
-        #     print(act_number, act_date)
-        #
-        #     rows = list(sheet.iter_rows(values_only=True))
-        #     for row in rows[30:]:
-        #         if row[0] is not None:
-        #             stmt = select(Products.id).where(Products.SKU == row[19])
-        #             pr_id = session1.scalar(stmt)
-        #             if pr_id is None:
-        #                 temp = check_temp(row[33])
-        #                 product1 = Products(SKU=row[19], name=row[3], producer=row[48],
-        #                                     measure=row[23], price=row[59], temp=temp,
-        #                                     capacity=int(math.ceil(12/row[38])));
-        #                 session1.add(product1)
-        #                 session1.commit()
-        #                 stmt = select(Products.id).where(Products.SKU == row[19])
-        #                 pr_id = session1.scalar(stmt)
-        #             dict_serv = get_input("Report", wh_id, pr_id, int(row[53]), "ИП Ромашка")
-        #             handler(dict_serv)
-        #         else:
-        #             break
-        #
-        # if sheet.cell(row=1, column=1).value == "ООО Подворье":
-        #     act_number = sheet.cell(row=3, column=2).value
-        #     act_date = sheet.cell(row=2, column=1).value
-        #     input_type_name_date = "Накладная " + act_number + " от " + act_date
-        #     print(act_number, act_date)
-        #
-        #     rows = list(sheet.iter_rows(values_only=True))
-        #     for row in rows[5:]:
-        #         if row[0] is not None:
-        #             stmt = select(Products.id).where(Products.SKU == row[0])
-        #             pr_id = session1.scalar(stmt)
-        #             if pr_id is None:
-        #                 temp = check_temp(row[3])
-        #                 product1 = Products(SKU=row[0], name=row[1], producer=row[2],
-        #                                     measure=row[4], price=int(round(row[6]/row[5])), temp=temp,
-        #                                     capacity=int(math.ceil(row[7]/row[5])));
-        #                 session1.add(product1)
-        #                 session1.commit()
-        #                 stmt = select(Products.id).where(Products.SKU == row[0])
-        #                 pr_id = session1.scalar(stmt)
-        #             dict_serv = get_input("Report", wh_id, pr_id, int(row[5]), "ООО Подворье")
-        #             handler(dict_serv)
-        #         else:
-        #             break
+        if serv_b_key == 0: print_gap("Ошибка заполнения либо загружен документ неподдреживаемого формата")
+
 
 @app.command()
 def print_rep (type_rep: str = typer.Option(..., help="Вид отчета - Ведомость по остаткам на складах (balance) или Акт инвентаризации данных (inventory)"),
@@ -209,7 +195,7 @@ def print_rep (type_rep: str = typer.Option(..., help="Вид отчета - В�
 
     """
     dict_capt = {"balance":"Остатки на складе ","inventory":"Акт инвертаризации по складу "}
-    today = datetime.now()
+
     now_date =  str(today.date()) + "_"+str(today.time()).replace(":","-")[:-7]
     if filename == "..def":
         filename = dict_capt[type_rep] + str(wh_id) +" на " + now_date + ".xlsx"

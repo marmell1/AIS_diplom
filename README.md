@@ -41,3 +41,9 @@ CLI - move (typer)
 тестирование  
 эскпорт отчетов  
 часть проверок
+
+uv run start.py  
+uv run main.py read --filename Накладная_2026-06-30.xlsx --wh-id 1
+uv run main.py read --filename Накладная_2026-07-02.xlsx --wh-id 1
+uv run main.py read --filename Отгрузка_май.xlsx --wh-id 1
+uv run main.py read --filename Отгрузка_июнь.xlsx --wh-id 1

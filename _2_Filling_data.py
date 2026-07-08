@@ -30,25 +30,25 @@ def main():
                             capacity = 15);
 
 
-        wh1 = Warehouses(name="Главный - приемка", capacity = 50, conditions = 20);
-        wh2 = Warehouses(name="Холодильный склад", capacity = 75, conditions = 0);
-        wh3 = Warehouses(name="Морозильный склад", capacity = 60, conditions = -20);
-        wh4 = Warehouses(name="Склад 1", capacity = 50, conditions = 20);
-        wh5 = Warehouses(name="Склад 2", capacity = 50, conditions = 20);
-        wh6 = Warehouses(name="Склад 3", capacity = 50, conditions = 20);
-        wh7 = Warehouses(name="Отбраковка", capacity = 40, conditions = 10);
+        wh1 = Warehouses(name="Главный - приемка", capacity = 500, conditions = 20);
+        wh2 = Warehouses(name="Холодильный склад", capacity = 750, conditions = 0);
+        wh3 = Warehouses(name="Морозильный склад", capacity = 600, conditions = -20);
+        wh4 = Warehouses(name="Склад 1", capacity = 500, conditions = 20);
+        wh5 = Warehouses(name="Склад 2", capacity = 500, conditions = 20);
+        wh6 = Warehouses(name="Склад 3", capacity = 500, conditions = 20);
+        wh7 = Warehouses(name="Отбраковка", capacity = 400, conditions = 10);
 
 
-        whl1 = WarehousesLoading(warehouse_id = 1,warehouse_name = "",product_id = 1,product_name = "",batch_id = 2,quantity = 10,capacity = 0)
-        whl2 = WarehousesLoading(warehouse_id = 1,warehouse_name = "",product_id = 2,product_name = "",batch_id = 2,quantity = 15,capacity = 0)
-        whl3 = WarehousesLoading(warehouse_id = 1,warehouse_name = "",product_id = 8,product_name = "",batch_id = 2,quantity = 50,capacity = 0)
-        whl4 = WarehousesLoading(warehouse_id = 2,warehouse_name = "",product_id = 3,product_name = "",batch_id = 1,quantity = 5,capacity = 0)
-        whl5 = WarehousesLoading(warehouse_id = 3,warehouse_name = "",product_id = 5,product_name = "",batch_id = 1,quantity = 15,capacity = 0)
-        whl6 = WarehousesLoading(warehouse_id = 4,warehouse_name = "",product_id = 6,product_name = "",batch_id = 3,quantity = 5,capacity = 0)
-        whl7 = WarehousesLoading(warehouse_id = 4,warehouse_name = "",product_id = 7,product_name = "",batch_id = 3,quantity = 12,capacity = 0)
-        whl8 = WarehousesLoading(warehouse_id = 6,warehouse_name = "",product_id = 8,product_name = "",batch_id = 3,quantity = 10,capacity = 0)
-        whl9 = WarehousesLoading(warehouse_id = 7,warehouse_name = "",product_id = 5,product_name = "",batch_id = 4,quantity = 2,capacity = 0)
-        whl10 = WarehousesLoading(warehouse_id = 7,warehouse_name = "",product_id = 6,product_name = "",batch_id = 4,quantity = 3,capacity = 0)
+        whl1 = WarehousesLoading(warehouse_id = 1,warehouse_name = "",product_id = 1,product_name = "",quantity = 10,capacity = 0)
+        whl2 = WarehousesLoading(warehouse_id = 1,warehouse_name = "",product_id = 2,product_name = "",quantity = 15,capacity = 0)
+        whl3 = WarehousesLoading(warehouse_id = 1,warehouse_name = "",product_id = 8,product_name = "",quantity = 30,capacity = 0)
+        whl4 = WarehousesLoading(warehouse_id = 2,warehouse_name = "",product_id = 3,product_name = "",quantity = 5,capacity = 0)
+        whl5 = WarehousesLoading(warehouse_id = 3,warehouse_name = "",product_id = 5,product_name = "",quantity = 15,capacity = 0)
+        whl6 = WarehousesLoading(warehouse_id = 4,warehouse_name = "",product_id = 6,product_name = "",quantity = 5,capacity = 0)
+        whl7 = WarehousesLoading(warehouse_id = 4,warehouse_name = "",product_id = 7,product_name = "",quantity = 12,capacity = 0)
+        whl8 = WarehousesLoading(warehouse_id = 6,warehouse_name = "",product_id = 8,product_name = "",quantity = 10,capacity = 0)
+        whl9 = WarehousesLoading(warehouse_id = 7,warehouse_name = "",product_id = 5,product_name = "",quantity = 2,capacity = 0)
+        whl10 = WarehousesLoading(warehouse_id = 7,warehouse_name = "",product_id = 6,product_name = "",quantity = 3,capacity = 0)
 
 
         session.add_all([product1,product2,product3,product4,product5,product6,product7,product8])
