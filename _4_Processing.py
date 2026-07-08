@@ -17,6 +17,16 @@ def main():
 def handler(di): # берем входящий dict
     today = datetime.now()
     with get_session() as session:
+    #проверить что количество положительное
+    #проверить что со склада не уйдет в минус штуки
+    #проверить что склад не переполнен
+        """
+        исключения и ошибки - словарь
+        input type левый
+        ответсвенный не назван
+        количество отрицательное или вообще строка
+        дата не дата
+        """
         add_stock_movement(session, di["input_type"], di["resp"], di["wh_in"], di["wh_out"], di["product_id"],
                            di["count"],di["date"] if "date" in di.keys() else today.date())
 
@@ -31,6 +41,12 @@ def handler(di): # берем входящий dict
 
 def change_wh(session, wh:int|str, product_id:int, count:int):
     print ("изменяем количество товара на складе")
+
+    """
+    исключения и ошибки
+    количество - строка или дробь
+    
+    """
     stmt = select(WarehousesLoading).where(WarehousesLoading.warehouse_id == wh, WarehousesLoading.product_id == product_id)
     whl1 = session.scalars(stmt).one_or_none()
 

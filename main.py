@@ -1,13 +1,19 @@
 # from _4_Processing import get_input as get_input
+from dataclasses import replace
+from datetime import datetime
+
 from _4_Processing import handler as handler
 from database import get_session
-from models import Products
+from models import Products,WarehousesLoading
 from sqlalchemy import select
 import math
+import pandas as pd
 import getpass
 
 
 import openpyxl
+from openpyxl.styles import (Alignment, Font)
+from openpyxl.utils import get_column_letter
 
 import typer
 app = typer.Typer()
@@ -50,11 +56,21 @@ def check_temp(rr):
 
 @app.command()
 def read(filename, wh_id):
+    #инструкцию прописать
+
+
     """
     Загрузка данных из накладной поставщика. Для примера всего два поставщика - ИП Ромашка и ООО Подворье
     """
     workbook = openpyxl.load_workbook(filename, data_only=True)  # data_only=True считывает значения, а не формулы
     sheet = workbook.active
+    # проверить что такого номера накладной нет в реестре
+    # проверить что файл по правильной форме
+    # что поставщик в списке
+    # что суммы и цены неотрицательные
+    # что дата еще не случилась
+    # что все штуки ниже где надо integer
+
 
     with get_session() as session1:
 
@@ -180,6 +196,77 @@ def read(filename, wh_id):
         #             handler(dict_serv)
         #         else:
         #             break
+
+@app.command()
+def print_rep (type_rep: str = typer.Option(..., help="Вид отчета - Ведомость по остаткам на складах (balance) или Акт инвентаризации данных (inventory)"),
+           wh_id: int = typer.Option(..., help="Номер склада"),
+           filename: str = typer.Option("..def", help="Название файла, в который будут выгружены данные")):
+    #инструкцию прописать
+    """
+    inventory balance report
+    Генерация документов: ведомость по остаткам на складах и акт инвентаризации по конкретному складу.
+
+    """
+    today = datetime.now()
+    now_date =  str(today.date()) + "_"+str(today.time()).replace(":","-")[:-7]
+    if filename == "..def":
+        filename = "Остатки на складе " + str(wh_id) +" на " + now_date + ".xlsx"
+    elif ".xlsx" not in filename:
+        filename = filename + ".xlsx"
+
+    with get_session() as session1:
+        stmt = select(WarehousesLoading).where(WarehousesLoading.warehouse_id == wh_id)
+        db_data = session1.scalars(stmt).all()
+        data_list = [
+            {k: v for k, v in item.__dict__.items() if k != "_sa_instance_state"}
+            for item in db_data
+        ]
+        df_whl = pd.DataFrame(data_list)
+
+        stmt = select(Products)
+        db_data = session1.scalars(stmt).all()
+        data_list = [
+            {k: v for k, v in item.__dict__.items() if k != "_sa_instance_state"}
+            for item in db_data
+        ]
+        df_products = pd.DataFrame(data_list)
+
+        df = df_whl.merge(df_products,left_on = 'product_id', right_on = "id", how = 'left')
+        df['cost'] = df['quantity']*df['price']
+        print(df.columns)
+        wh_name = df['warehouse_name'][0]
+        print()
+        print(df)
+
+        df = df[['SKU', 'product_name','producer','quantity', 'cost']]
+        df.columns = ['Артикул','Наименование товара','Изготовитель','Текущий остаток','Общая стоимость позиции на складе']
+
+        if type_rep == "balance":
+            with pd.ExcelWriter(filename, engine="openpyxl") as writer:
+                df.to_excel(writer, index=False, startrow=5)
+                worksheet = writer.sheets["Sheet1"]  # Название листа по умолчанию
+                worksheet["A1"] = "Ведомость остатков товаров"
+                worksheet["A1"].font = Font(bold = True)
+                worksheet["A2"] = f"Склад {wh_id} ({wh_name})"
+                worksheet["A3"] = "Выгружено " + now_date
+
+
+                for col_num in range(1, len(df.columns) + 1):
+                    print(col_num)
+                    cell = worksheet.cell(row=6, column=col_num)
+                    cell.font = Font(bold = True)
+                    col_letter = get_column_letter(col_num)
+                    worksheet.column_dimensions[col_letter].width = len(df.columns[col_num-1]) +5
+
+                final_row = 8 + len(df)
+                worksheet["A"+ str(final_row)] = "Итого"
+                worksheet["A"+ str(final_row)].font = Font(bold = True)
+                worksheet["E"+ str(final_row)] = df['Общая стоимость позиции на складе'].sum()
+                worksheet["E"+ str(final_row)].font = Font(bold = True)
+
+                for row in range(5,final_row+3):
+                    worksheet["E"+ str(row)].number_format = "#,##0.00"
+
 
 
 
