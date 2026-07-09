@@ -36,14 +36,13 @@ CLI - move (typer)
 Накладная_2026-07-06  
 Отгрузка_июнь
 
-пока в процессе разработки:
-ошибки  
-тестирование  
-эскпорт отчетов  
-часть проверок
 
 uv run start.py  
 uv run main.py read --filename Накладная_2026-06-30.xlsx --wh-id 1
-uv run main.py read --filename Накладная_2026-07-02.xlsx --wh-id 1
-uv run main.py read --filename Отгрузка_май.xlsx --wh-id 1
-uv run main.py read --filename Отгрузка_июнь.xlsx --wh-id 1
+uv run main.py read --filename Накладная_2026-07-02.xlsx --wh-id 1  
+uv run main.py read --filename Отгрузка_май.xlsx --wh-id 1  
+uv run main.py read --filename Отгрузка_июнь.xlsx --wh-id 1  
+uv run main.py read --filename Отгрузка_июнь_с_ошибкой.xlsx --wh-id 1
+
+uv run main.py move --wh 4 --pr 8 --q 30 --source 1
+uv run main.py print-rep --type-rep balance --wh-id 1
